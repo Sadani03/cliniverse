@@ -1,0 +1,56 @@
+# -----------------------------
+# Environment variables
+# -----------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------
+# Frontend / Next.js
+# -----------------------------
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel/
+frontend/coverage/
+frontend/*.log
+frontend/.DS_Store
+
+# -----------------------------
+# Backend / Python
+# -----------------------------
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/htmlcov/
+backend/.coverage
+
+# -----------------------------
+# IDE and operating system
+# -----------------------------
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------------------
+# Logs and temporary files
+# -----------------------------
+*.log
+logs/
+tmp/
+temp/
+
+# -----------------------------
+# Secrets and credentials
+# -----------------------------
+*.pem
+*.key
+credentials.json
+service-account.json
