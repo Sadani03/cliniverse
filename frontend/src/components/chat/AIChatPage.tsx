@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bot,
   MessageCirclePlus,
   ShieldAlert,
   Sparkles,
