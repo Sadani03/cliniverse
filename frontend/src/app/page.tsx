@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { PlaceholderPage } from "@/components/shared/PlaceholderPage";
 import { AIChatPage } from "@/components/chat/AIChatPage";
+import { SymptomCheckerPage } from "@/components/symptom-checker/SymptomCheckerPage";
 
 export default function Home() {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -23,12 +24,7 @@ export default function Home() {
         return <AIChatPage />;
 
       case "Symptom Checker":
-        return (
-          <PlaceholderPage
-            title="Symptom Checker"
-            description="The guided symptom-checking workflow will be developed after the AI chat interface."
-          />
-        );
+        return <SymptomCheckerPage />;
 
       case "Profile":
         return (
