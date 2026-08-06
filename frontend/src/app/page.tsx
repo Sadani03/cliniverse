@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
-import { PlaceholderPage } from "@/components/shared/PlaceholderPage";
 import { AIChatPage } from "@/components/chat/AIChatPage";
 import { SymptomCheckerPage } from "@/components/symptom-checker/SymptomCheckerPage";
 import { ProfilePage } from "@/components/profile/ProfilePage";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 
 export default function Home() {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -31,12 +31,7 @@ export default function Home() {
         return <ProfilePage />;
 
       case "Settings":
-        return (
-          <PlaceholderPage
-            title="Settings"
-            description="Theme, language, voice, privacy, and AI response preferences will be managed here."
-          />
-        );
+        return <SettingsPage />;
 
       default:
         return null;

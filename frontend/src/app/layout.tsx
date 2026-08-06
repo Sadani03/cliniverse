@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Inter,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
+
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,7 +20,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "CliniVerse | Nova AI Healthcare Assistant",
   description:
-    "CliniVerse is an AI-powered healthcare assistant featuring Nova, an intelligent health companion.",
+    "CliniVerse is an AI-powered healthcare assistant featuring Nova.",
 };
 
 export default function RootLayout({
@@ -24,14 +29,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} antialiased`}
         style={{
           fontFamily: "var(--font-inter), sans-serif",
         }}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

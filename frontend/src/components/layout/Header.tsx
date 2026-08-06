@@ -7,6 +7,8 @@ import {
   Search,
 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/settings/ThemeToggle";
+
 type HeaderProps = {
   onOpenMobileMenu: () => void;
 };
@@ -53,6 +55,8 @@ export function Header({
             className="w-full bg-transparent text-sm outline-none placeholder:text-[#85675E]/70"
           />
         </div>
+        
+        <ThemeToggle />
 
         <button
           type="button"

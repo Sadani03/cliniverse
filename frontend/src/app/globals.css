@@ -22,6 +22,24 @@
   --shadow-card: 0 12px 35px rgba(82, 28, 13, 0.08);
 }
 
+.dark {
+  --background: #170b07;
+  --background-secondary: #24100a;
+  --primary: #ff9b45;
+  --primary-hover: #ffad65;
+  --accent: #f15a2a;
+  --accent-hover: #ff7043;
+  --foreground: #fff4ee;
+  --muted-foreground: #d6b7aa;
+
+  --glass-background: rgba(54, 25, 17, 0.58);
+  --glass-background-strong: rgba(43, 18, 12, 0.76);
+  --glass-border: rgba(255, 202, 175, 0.16);
+
+  --shadow-soft: 0 20px 55px rgba(0, 0, 0, 0.34);
+  --shadow-card: 0 12px 35px rgba(0, 0, 0, 0.26);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -53,10 +71,38 @@ body {
     linear-gradient(
       135deg,
       var(--background) 0%,
-      #fff8f4 50%,
+      var(--background-secondary) 50%,
       #f7ded2 100%
     );
   background-attachment: fixed;
+  transition:
+    color 250ms ease,
+    background-color 250ms ease;
+}
+
+.dark body {
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(255, 155, 69, 0.16),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(213, 69, 27, 0.15),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 55% 90%,
+      rgba(82, 28, 13, 0.3),
+      transparent 36%
+    ),
+    linear-gradient(
+      135deg,
+      var(--background) 0%,
+      var(--background-secondary) 52%,
+      #1b0b07 100%
+    );
 }
 
 button,
@@ -163,4 +209,51 @@ a {
 
 .animate-pulse-glow {
   animation: pulseGlow 3.5s ease-in-out infinite;
+}
+.dark .text-\[\#521C0D\] {
+  color: #fff4ee;
+}
+
+.dark .text-\[\#521C0D\]\/75 {
+  color: rgba(255, 244, 238, 0.78);
+}
+
+.dark .text-\[\#85675E\] {
+  color: #d6b7aa;
+}
+
+.dark .text-\[\#6F4B40\] {
+  color: #ddc0b4;
+}
+
+.dark .bg-white\/20,
+.dark .bg-white\/25,
+.dark .bg-white\/30,
+.dark .bg-white\/32,
+.dark .bg-white\/35,
+.dark .bg-white\/40,
+.dark .bg-white\/45,
+.dark .bg-white\/48,
+.dark .bg-white\/50,
+.dark .bg-white\/55,
+.dark .bg-white\/60,
+.dark .bg-white\/65,
+.dark .bg-white\/70 {
+  background-color: rgba(75, 34, 23, 0.55);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: #fff4ee;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(214, 183, 170, 0.72);
+}
+
+.dark select option {
+  color: #fff4ee;
+  background: #2b120c;
 }
