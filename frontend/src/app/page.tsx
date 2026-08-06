@@ -7,6 +7,7 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { PlaceholderPage } from "@/components/shared/PlaceholderPage";
 import { AIChatPage } from "@/components/chat/AIChatPage";
 import { SymptomCheckerPage } from "@/components/symptom-checker/SymptomCheckerPage";
+import { ProfilePage } from "@/components/profile/ProfilePage";
 
 export default function Home() {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -27,12 +28,7 @@ export default function Home() {
         return <SymptomCheckerPage />;
 
       case "Profile":
-        return (
-          <PlaceholderPage
-            title="Profile"
-            description="This page will contain the patient's editable personal and health profile."
-          />
-        );
+        return <ProfilePage />;
 
       case "Settings":
         return (
