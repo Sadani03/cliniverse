@@ -6,9 +6,7 @@ class RegisterRequest(BaseModel):
         min_length=2,
         max_length=150,
     )
-
     email: EmailStr
-
     password: str = Field(
         min_length=8,
         max_length=128,
@@ -16,6 +14,29 @@ class RegisterRequest(BaseModel):
 
 
 class RegisterResponse(BaseModel):
+    id: int
+    full_name: str
+    email: EmailStr
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class CurrentUserResponse(BaseModel):
     id: int
     full_name: str
     email: EmailStr
