@@ -11,10 +11,12 @@ import { ThemeToggle } from "@/components/settings/ThemeToggle";
 
 type HeaderProps = {
   onOpenMobileMenu: () => void;
+    userName: string;
 };
 
 export function Header({
   onOpenMobileMenu,
+  userName,
 }: HeaderProps) {
   return (
     <header className="flex items-center justify-between gap-6">
@@ -36,7 +38,7 @@ export function Header({
                 "var(--font-plus-jakarta), sans-serif",
             }}
           >
-            Good morning, Sadani 👋
+            Healthy Day, {userName.split(" ")[0]} !👋
           </h2>
 
           <p className="mt-1 text-sm text-[#85675E]">
@@ -55,7 +57,7 @@ export function Header({
             className="w-full bg-transparent text-sm outline-none placeholder:text-[#85675E]/70"
           />
         </div>
-        
+
         <ThemeToggle />
 
         <button
@@ -77,7 +79,7 @@ export function Header({
           </div>
 
           <div className="text-left">
-            <p className="text-sm font-semibold">Sadani S.</p>
+            <p className="text-sm font-semibold">{userName}</p>
             <p className="text-xs text-[#85675E]">Patient</p>
           </div>
 
