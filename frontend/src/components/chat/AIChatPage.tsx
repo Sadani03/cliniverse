@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  AlertCircle,
   MessageCirclePlus,
   ShieldAlert,
   Sparkles,
   Trash2,
 } from "lucide-react";
+
 import {
   useEffect,
   useRef,
@@ -18,99 +20,13 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { NovaAnimation } from "@/components/nova/NovaAnimation";
 import { GlassCard } from "@/components/shared/GlassCard";
 
+import { sendChatMessage } from "@/services/chatService";
+
 import type { ChatMessage } from "@/types/chat";
 
 type AIChatPageProps = {
   initialMessage?: string | null;
 };
-
-function createWelcomeMessage(): ChatMessage {
-  return {
-    id: crypto.randomUUID(),
-    role: "assistant",
-    content:
-      "Hello! I’m Nova, your AI healthcare companion. Tell me how you’re feeling, and I’ll help you understand possible next steps.",
-    createdAt: new Date(),
-  };
-}
-
-function createDemoResponse(
-  message: string
-): string {
-  const value =
-    message.toLowerCase();
-
-  if (
-    value.includes("headache")
-  ) {
-    return (
-      "Headaches can have common causes such as dehydration, stress, tiredness, eye strain, or minor infections.\n\n" +
-      "Try resting, drinking water, and reducing screen exposure. Seek urgent medical care for a sudden severe headache or one accompanied by confusion, weakness, fainting, or vision loss."
-    );
-  }
-
-  if (
-    value.includes("fever")
-  ) {
-    return (
-      "A fever is often the body’s response to an infection. Rest, drink enough fluids, and monitor your temperature.\n\n" +
-      "Seek medical care if it is very high, lasts several days, or occurs with breathing difficulty, confusion, severe dehydration, seizures, or a worsening rash."
-    );
-  }
-
-  if (
-    value.includes("sleep")
-  ) {
-    return (
-      "Try following a regular sleep schedule, avoiding caffeine late in the day, reducing screen use before bed, and keeping your room dark and comfortable.\n\n" +
-      "Consider speaking with a healthcare professional if sleep difficulties continue or interfere with your daily life."
-    );
-  }
-
-  if (
-    value.includes("sore throat")
-  ) {
-    return (
-      "A sore throat may be related to a viral infection, allergies, dry air, irritation, or sometimes a bacterial infection.\n\n" +
-      "Warm fluids and rest may help. Seek medical advice for breathing or swallowing difficulty, severe swelling, dehydration, or worsening symptoms."
-    );
-  }
-
-  return (
-    "Thank you for explaining that. Could you tell me when the symptoms started, how severe they are, and whether you have any other symptoms?\n\n" +
-    "For severe or urgent symptoms, contact a qualified healthcare professional."
-  );
-}
-
-function createInitialMessages(
-  initialMessage?: string | null
-): ChatMessage[] {
-  const welcome =
-    createWelcomeMessage();
-
-  if (!initialMessage) {
-    return [welcome];
-  }
-
-  return [
-    welcome,
-    {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: initialMessage,
-      createdAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content:
-        createDemoResponse(
-          initialMessage
-        ),
-      createdAt: new Date(),
-    },
-  ];
-}
 
 const suggestedPrompts = [
   "I have a headache",
@@ -119,26 +35,58 @@ const suggestedPrompts = [
   "When should I see a doctor for a fever?",
 ];
 
+function createWelcomeMessage(): ChatMessage {
+  return {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    content:
+      "Hello! I’m Nova, your AI healthcare companion. Tell me how you’re feeling, and I’ll provide general health information and guidance.",
+    createdAt: new Date(),
+  };
+}
+
+function createInitialMessages(
+  initialMessage?: string | null
+): ChatMessage[] {
+  const welcome = createWelcomeMessage();
+
+  if (!initialMessage?.trim()) {
+    return [welcome];
+  }
+
+  return [
+    welcome,
+    {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: initialMessage.trim(),
+      createdAt: new Date(),
+    },
+  ];
+}
+
 export function AIChatPage({
   initialMessage,
 }: AIChatPageProps) {
   const [messages, setMessages] =
     useState<ChatMessage[]>(() =>
-      createInitialMessages(
-        initialMessage
-      )
+      createInitialMessages(initialMessage)
     );
 
   const [message, setMessage] =
     useState("");
 
-  const [
-    isTyping,
-    setIsTyping,
-  ] = useState(false);
+  const [isTyping, setIsTyping] =
+    useState(false);
+
+  const [chatError, setChatError] =
+    useState("");
 
   const messagesEndRef =
     useRef<HTMLDivElement>(null);
+
+  const initialMessageSentRef =
+    useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -146,16 +94,69 @@ export function AIChatPage({
     });
   }, [messages, isTyping]);
 
+  useEffect(() => {
+    if (
+      !initialMessage?.trim() ||
+      initialMessageSentRef.current
+    ) {
+      return;
+    }
+
+    initialMessageSentRef.current = true;
+
+    const cleanMessage =
+      initialMessage.trim();
+
+    async function sendInitialMessage() {
+      setIsTyping(true);
+      setChatError("");
+
+      try {
+        const novaResponse =
+          await sendChatMessage(
+            cleanMessage
+          );
+
+        const assistantMessage: ChatMessage =
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: novaResponse,
+            createdAt: new Date(),
+          };
+
+        setMessages(
+          (currentMessages) => [
+            ...currentMessages,
+            assistantMessage,
+          ]
+        );
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Nova is temporarily unavailable.";
+
+        setChatError(errorMessage);
+      } finally {
+        setIsTyping(false);
+      }
+    }
+
+    void sendInitialMessage();
+  }, [initialMessage]);
+
   function clearChat() {
     setMessages([
       createWelcomeMessage(),
     ]);
 
     setMessage("");
+    setChatError("");
     setIsTyping(false);
   }
 
-  function sendMessage(
+  async function sendMessage(
     customMessage?: string
   ) {
     const cleanMessage = (
@@ -184,17 +185,20 @@ export function AIChatPage({
     );
 
     setMessage("");
+    setChatError("");
     setIsTyping(true);
 
-    window.setTimeout(() => {
+    try {
+      const novaResponse =
+        await sendChatMessage(
+          cleanMessage
+        );
+
       const assistantMessage: ChatMessage =
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            createDemoResponse(
-              cleanMessage
-            ),
+          content: novaResponse,
           createdAt: new Date(),
         };
 
@@ -204,9 +208,16 @@ export function AIChatPage({
           assistantMessage,
         ]
       );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Nova is temporarily unavailable.";
 
+      setChatError(errorMessage);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   }
 
   return (
@@ -221,10 +232,7 @@ export function AIChatPage({
             onClick={clearChat}
             className="primary-gradient flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:scale-[1.02]"
           >
-            <MessageCirclePlus
-              size={18}
-            />
-
+            <MessageCirclePlus size={18} />
             New conversation
           </button>
 
@@ -239,12 +247,13 @@ export function AIChatPage({
                   <button
                     key={prompt}
                     type="button"
+                    disabled={isTyping}
                     onClick={() =>
-                      sendMessage(
+                      void sendMessage(
                         prompt
                       )
                     }
-                    className="rounded-2xl border border-white/60 bg-white/35 px-3 py-3 text-left text-sm leading-5 transition hover:bg-white/65"
+                    className="rounded-2xl border border-white/60 bg-white/35 px-3 py-3 text-left text-sm leading-5 transition hover:bg-white/65 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {prompt}
                   </button>
@@ -255,18 +264,15 @@ export function AIChatPage({
 
           <div className="mt-auto rounded-2xl border border-red-200/60 bg-red-50/45 p-4">
             <div className="flex items-center gap-2 font-bold text-red-700">
-              <ShieldAlert
-                size={18}
-              />
-
+              <ShieldAlert size={18} />
               Emergency warning
             </div>
 
             <p className="mt-2 text-xs leading-5 text-red-950/70">
               Nova cannot handle medical
               emergencies. Contact local
-              emergency services for
-              immediate help.
+              emergency services for immediate
+              help.
             </p>
           </div>
         </GlassCard>
@@ -296,7 +302,6 @@ export function AIChatPage({
 
               <p className="flex items-center gap-2 text-xs text-[#85675E]">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-
                 AI healthcare companion
               </p>
             </div>
@@ -305,8 +310,8 @@ export function AIChatPage({
           <button
             type="button"
             onClick={clearChat}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/40 text-[#85675E] transition hover:bg-red-50 hover:text-red-600"
             aria-label="Clear conversation"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/40 text-[#85675E] transition hover:bg-red-50 hover:text-red-600"
           >
             <Trash2 size={18} />
           </button>
@@ -331,11 +336,26 @@ export function AIChatPage({
               <TypingIndicator />
             )}
 
-            <div
-              ref={
-                messagesEndRef
-              }
-            />
+            {chatError && (
+              <div className="flex items-start gap-3 rounded-2xl border border-red-200/60 bg-red-50/60 p-4 text-red-700">
+                <AlertCircle
+                  size={19}
+                  className="mt-0.5 shrink-0"
+                />
+
+                <div>
+                  <p className="text-sm font-bold">
+                    Nova couldn&apos;t respond
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5">
+                    {chatError}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -349,12 +369,13 @@ export function AIChatPage({
                     <button
                       key={prompt}
                       type="button"
+                      disabled={isTyping}
                       onClick={() =>
-                        sendMessage(
+                        void sendMessage(
                           prompt
                         )
                       }
-                      className="rounded-full border border-white/70 bg-white/45 px-4 py-2 text-xs font-medium transition hover:bg-white/75"
+                      className="rounded-full border border-white/70 bg-white/45 px-4 py-2 text-xs font-medium transition hover:bg-white/75 disabled:opacity-50"
                     >
                       {prompt}
                     </button>
@@ -366,11 +387,9 @@ export function AIChatPage({
           <ChatComposer
             message={message}
             disabled={isTyping}
-            onMessageChange={
-              setMessage
-            }
+            onMessageChange={setMessage}
             onSend={() =>
-              sendMessage()
+              void sendMessage()
             }
           />
         </div>
