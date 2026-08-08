@@ -139,7 +139,7 @@ export function Header({
         <h2
           className={`mt-1 text-xl font-bold ${primaryText}`}
         >
-          Hi, {firstName} 👋
+          Healthy Day, {firstName} !👋
         </h2>
       </div>
 
