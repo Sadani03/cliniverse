@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
   getAccessToken,
@@ -17,61 +20,76 @@ import type {
   RegisterPayload,
 } from "@/types/auth";
 
-function loadInitialToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return getAccessToken();
-}
-
 export function useAuth() {
-  const [token, setToken] = useState<string | null>(
-    loadInitialToken
-  );
-
   const [user, setUser] =
     useState<AuthUser | null>(null);
 
-  const [isCheckingAuth, setIsCheckingAuth] =
-    useState<boolean>(() => {
-      return Boolean(loadInitialToken());
-    });
+  /*
+   * IMPORTANT:
+   * Always start as true.
+   *
+   * This guarantees that the server and browser
+   * produce the exact same first render.
+   */
+  const [
+    isCheckingAuth,
+    setIsCheckingAuth,
+  ] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
-
     let cancelled = false;
 
-    async function checkCurrentUser() {
+    async function initialiseAuth() {
+      /*
+       * Yield once so all state updates happen
+       * asynchronously rather than synchronously
+       * inside the effect body.
+       */
+      await Promise.resolve();
+
+      const token =
+        getAccessToken();
+
+      if (!token) {
+        if (!cancelled) {
+          setIsCheckingAuth(false);
+        }
+
+        return;
+      }
+
       try {
         const currentUser =
-          await getCurrentUser(token!);
+          await getCurrentUser(
+            token
+          );
 
         if (!cancelled) {
-          setUser(currentUser);
+          setUser(
+            currentUser
+          );
         }
       } catch {
+        removeAccessToken();
+
         if (!cancelled) {
-          removeAccessToken();
-          setToken(null);
           setUser(null);
         }
       } finally {
         if (!cancelled) {
-          setIsCheckingAuth(false);
+          setIsCheckingAuth(
+            false
+          );
         }
       }
     }
 
-    void checkCurrentUser();
+    void initialiseAuth();
 
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, []);
 
   async function login(
     payload: LoginPayload
@@ -80,7 +98,9 @@ export function useAuth() {
 
     try {
       const response =
-        await loginUser(payload);
+        await loginUser(
+          payload
+        );
 
       saveAccessToken(
         response.access_token
@@ -91,30 +111,35 @@ export function useAuth() {
           response.access_token
         );
 
-      setToken(response.access_token);
       setUser(currentUser);
     } finally {
-      setIsCheckingAuth(false);
+      setIsCheckingAuth(
+        false
+      );
     }
   }
 
   async function register(
     payload: RegisterPayload
   ): Promise<void> {
-    await registerUser(payload);
+    await registerUser(
+      payload
+    );
 
     await login({
       email: payload.email,
-      password: payload.password,
+      password:
+        payload.password,
     });
   }
 
   function logout() {
     removeAccessToken();
 
-    setToken(null);
     setUser(null);
-    setIsCheckingAuth(false);
+    setIsCheckingAuth(
+      false
+    );
   }
 
   return {

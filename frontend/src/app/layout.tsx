@@ -5,6 +5,7 @@ import {
 } from "next/font/google";
 
 import { ThemeProvider } from "@/providers/ThemeProvider";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -12,13 +13,16 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-});
+const plusJakartaSans =
+  Plus_Jakarta_Sans({
+    variable:
+      "--font-plus-jakarta",
+    subsets: ["latin"],
+  });
 
 export const metadata: Metadata = {
-  title: "CliniVerse | Nova AI Healthcare Assistant",
+  title:
+    "CliniVerse | Nova AI Healthcare Assistant",
   description:
     "CliniVerse is an AI-powered healthcare assistant featuring Nova.",
 };
@@ -29,19 +33,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} antialiased`}
         style={{
-          fontFamily: "var(--font-inter), sans-serif",
+          fontFamily:
+            "var(--font-inter), sans-serif",
         }}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider>
           {children}
         </ThemeProvider>
       </body>

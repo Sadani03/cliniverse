@@ -49,13 +49,13 @@ export function Sidebar({
     <aside className="glass-panel-strong flex min-h-[calc(100vh-32px)] w-[260px] flex-col rounded-[30px] p-5">
       {/* Brand */}
       <div className="flex items-center gap-3 px-2 py-4">
-        <div className="primary-gradient flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-lg">
+        <div className="primary-gradient flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-lg">
           +
         </div>
 
         <div>
           <h1
-            className="text-2xl font-bold tracking-tight"
+            className="text-2xl font-bold tracking-tight text-[#521C0D]"
             style={{
               fontFamily:
                 "var(--font-plus-jakarta), sans-serif",
@@ -88,25 +88,26 @@ export function Sidebar({
                 onItemChange(item.label)
               }
               className={cn(
-                "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-all duration-300",
+                "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200",
                 isActive
                   ? "bg-[#FF9B45]/20 text-[#D5451B] shadow-sm"
-                  : "text-[#521C0D]/75 hover:bg-white/35 hover:text-[#D5451B] dark:text-white/80"
+                  : "text-[#521C0D] hover:bg-[#FF9B45]/10 hover:text-[#D5451B]"
               )}
             >
-              <Icon size={20} />
+              <Icon
+                size={20}
+                strokeWidth={2}
+              />
 
-              <span>
-                {item.label}
-              </span>
+              <span>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      {/* Support Card */}
-      <div className="glass-panel mb-4 rounded-2xl p-4">
-        <p className="text-sm font-semibold">
+      {/* Support card */}
+      <div className="mb-4 rounded-2xl border border-white/80 bg-white/55 p-4 shadow-sm">
+        <p className="text-sm font-bold text-[#521C0D]">
           Your health, our priority
         </p>
 
@@ -120,13 +121,11 @@ export function Sidebar({
       <button
         type="button"
         onClick={onLogout}
-        className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-[#D5451B] transition-all duration-300 hover:bg-[#D5451B]/10"
+        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold text-[#D5451B] transition-all duration-200 hover:bg-[#D5451B]/10"
       >
         <LogOut size={20} />
 
-        <span>
-          Logout
-        </span>
+        <span>Logout</span>
       </button>
     </aside>
   );

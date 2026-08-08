@@ -10,6 +10,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { ProfilePage } from "@/components/profile/ProfilePage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { SymptomCheckerPage } from "@/components/symptom-checker/SymptomCheckerPage";
+
 import { useAuth } from "@/hooks/useAuth";
 
 type PageName =
@@ -20,11 +21,24 @@ type PageName =
   | "Settings";
 
 export default function Home() {
-  const [activeItem, setActiveItem] =
-    useState<PageName>("Dashboard");
+  const [
+    activeItem,
+    setActiveItem,
+  ] = useState<PageName>(
+    "Dashboard"
+  );
 
-  const [mobileMenuOpen, setMobileMenuOpen] =
-    useState(false);
+  const [
+    mobileMenuOpen,
+    setMobileMenuOpen,
+  ] = useState(false);
+
+  const [
+    pendingChatMessage,
+    setPendingChatMessage,
+  ] = useState<
+    string | null
+  >(null);
 
   const {
     user,
@@ -34,24 +48,55 @@ export default function Home() {
     logout,
   } = useAuth();
 
-  function handleNavigation(item: string) {
-    const allowedPages: PageName[] = [
-      "Dashboard",
-      "AI Chat",
-      "Symptom Checker",
-      "Profile",
-      "Settings",
-    ];
+  function handleNavigation(
+    item: string
+  ) {
+    const allowedPages: PageName[] =
+      [
+        "Dashboard",
+        "AI Chat",
+        "Symptom Checker",
+        "Profile",
+        "Settings",
+      ];
 
-    if (allowedPages.includes(item as PageName)) {
-      setActiveItem(item as PageName);
+    if (
+      allowedPages.includes(
+        item as PageName
+      )
+    ) {
+      setActiveItem(
+        item as PageName
+      );
     }
+  }
+
+  function handleOpenChat(
+    message?: string
+  ) {
+    setPendingChatMessage(
+      message ?? null
+    );
+
+    setActiveItem(
+      "AI Chat"
+    );
   }
 
   function handleLogout() {
     logout();
-    setActiveItem("Dashboard");
-    setMobileMenuOpen(false);
+
+    setActiveItem(
+      "Dashboard"
+    );
+
+    setPendingChatMessage(
+      null
+    );
+
+    setMobileMenuOpen(
+      false
+    );
   }
 
   function renderCurrentPage() {
@@ -59,26 +104,52 @@ export default function Home() {
       case "Dashboard":
         return (
           <Dashboard
-            onNavigate={handleNavigation}
+            onNavigate={
+              handleNavigation
+            }
+            onOpenChat={
+              handleOpenChat
+            }
           />
         );
 
       case "AI Chat":
-        return <AIChatPage />;
+        return (
+          <AIChatPage
+            key={
+              pendingChatMessage ??
+              "normal-chat"
+            }
+            initialMessage={
+              pendingChatMessage
+            }
+          />
+        );
 
       case "Symptom Checker":
-        return <SymptomCheckerPage />;
+        return (
+          <SymptomCheckerPage />
+        );
 
       case "Profile":
-        return <ProfilePage />;
+        return (
+          <ProfilePage />
+        );
 
       case "Settings":
-        return <SettingsPage />;
+        return (
+          <SettingsPage />
+        );
 
       default:
         return (
           <Dashboard
-            onNavigate={handleNavigation}
+            onNavigate={
+              handleNavigation
+            }
+            onOpenChat={
+              handleOpenChat
+            }
           />
         );
     }
@@ -102,7 +173,8 @@ export default function Home() {
             </p>
 
             <p className="mt-1 text-sm text-[#85675E]">
-              Loading your healthcare experience...
+              Loading your healthcare
+              experience...
             </p>
           </div>
         </div>
@@ -114,7 +186,9 @@ export default function Home() {
     return (
       <AuthPage
         onLogin={login}
-        onRegister={register}
+        onRegister={
+          register
+        }
       />
     );
   }
@@ -125,9 +199,15 @@ export default function Home() {
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <Sidebar
-            activeItem={activeItem}
-            onItemChange={handleNavigation}
-            onLogout={handleLogout}
+            activeItem={
+              activeItem
+            }
+            onItemChange={
+              handleNavigation
+            }
+            onLogout={
+              handleLogout
+            }
           />
         </div>
 
@@ -138,31 +218,57 @@ export default function Home() {
               type="button"
               aria-label="Close navigation"
               onClick={() =>
-                setMobileMenuOpen(false)
+                setMobileMenuOpen(
+                  false
+                )
               }
               className="absolute inset-0 bg-[#521C0D]/25 backdrop-blur-sm"
             />
 
             <div className="relative h-full w-[280px] p-3">
               <Sidebar
-                activeItem={activeItem}
-                onItemChange={(item: string) => {
-                  handleNavigation(item);
-                  setMobileMenuOpen(false);
+                activeItem={
+                  activeItem
+                }
+                onItemChange={(
+                  item: string
+                ) => {
+                  handleNavigation(
+                    item
+                  );
+
+                  setMobileMenuOpen(
+                    false
+                  );
                 }}
-                onLogout={handleLogout}
+                onLogout={
+                  handleLogout
+                }
               />
             </div>
           </div>
         )}
 
-        {/* Main Application */}
+        {/* Main app */}
         <section className="min-w-0 flex-1 p-2 sm:p-4 lg:p-6">
           <Header
             onOpenMobileMenu={() =>
-              setMobileMenuOpen(true)
+              setMobileMenuOpen(
+                true
+              )
             }
-            userName={user.full_name}
+            userName={
+              user.full_name
+            }
+            userEmail={
+              user.email
+            }
+            onNavigate={
+              handleNavigation
+            }
+            onLogout={
+              handleLogout
+            }
           />
 
           {renderCurrentPage()}

@@ -17,15 +17,100 @@ import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { NovaAnimation } from "@/components/nova/NovaAnimation";
 import { GlassCard } from "@/components/shared/GlassCard";
+
 import type { ChatMessage } from "@/types/chat";
 
-const starterMessage: ChatMessage = {
-  id: "nova-welcome",
-  role: "assistant",
-  content:
-    "Hello! I’m Nova, your AI healthcare companion. Tell me how you’re feeling, and I’ll help you understand possible next steps.",
-  createdAt: new Date(),
+type AIChatPageProps = {
+  initialMessage?: string | null;
 };
+
+function createWelcomeMessage(): ChatMessage {
+  return {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    content:
+      "Hello! I’m Nova, your AI healthcare companion. Tell me how you’re feeling, and I’ll help you understand possible next steps.",
+    createdAt: new Date(),
+  };
+}
+
+function createDemoResponse(
+  message: string
+): string {
+  const value =
+    message.toLowerCase();
+
+  if (
+    value.includes("headache")
+  ) {
+    return (
+      "Headaches can have common causes such as dehydration, stress, tiredness, eye strain, or minor infections.\n\n" +
+      "Try resting, drinking water, and reducing screen exposure. Seek urgent medical care for a sudden severe headache or one accompanied by confusion, weakness, fainting, or vision loss."
+    );
+  }
+
+  if (
+    value.includes("fever")
+  ) {
+    return (
+      "A fever is often the body’s response to an infection. Rest, drink enough fluids, and monitor your temperature.\n\n" +
+      "Seek medical care if it is very high, lasts several days, or occurs with breathing difficulty, confusion, severe dehydration, seizures, or a worsening rash."
+    );
+  }
+
+  if (
+    value.includes("sleep")
+  ) {
+    return (
+      "Try following a regular sleep schedule, avoiding caffeine late in the day, reducing screen use before bed, and keeping your room dark and comfortable.\n\n" +
+      "Consider speaking with a healthcare professional if sleep difficulties continue or interfere with your daily life."
+    );
+  }
+
+  if (
+    value.includes("sore throat")
+  ) {
+    return (
+      "A sore throat may be related to a viral infection, allergies, dry air, irritation, or sometimes a bacterial infection.\n\n" +
+      "Warm fluids and rest may help. Seek medical advice for breathing or swallowing difficulty, severe swelling, dehydration, or worsening symptoms."
+    );
+  }
+
+  return (
+    "Thank you for explaining that. Could you tell me when the symptoms started, how severe they are, and whether you have any other symptoms?\n\n" +
+    "For severe or urgent symptoms, contact a qualified healthcare professional."
+  );
+}
+
+function createInitialMessages(
+  initialMessage?: string | null
+): ChatMessage[] {
+  const welcome =
+    createWelcomeMessage();
+
+  if (!initialMessage) {
+    return [welcome];
+  }
+
+  return [
+    welcome,
+    {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: initialMessage,
+      createdAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content:
+        createDemoResponse(
+          initialMessage
+        ),
+      createdAt: new Date(),
+    },
+  ];
+}
 
 const suggestedPrompts = [
   "I have a headache",
@@ -34,59 +119,23 @@ const suggestedPrompts = [
   "When should I see a doctor for a fever?",
 ];
 
-function createDemoResponse(message: string): string {
-  const normalizedMessage = message.toLowerCase();
-
-  if (
-    normalizedMessage.includes("headache")
-  ) {
-    return (
-      "Headaches can have several common causes, including dehydration, stress, lack of sleep, eye strain, or minor infections.\n\n" +
-      "Try resting, drinking water, and avoiding bright screens for a short period. Seek urgent medical care if the headache is sudden and severe, follows a head injury, or occurs with confusion, weakness, fainting, or vision loss."
+export function AIChatPage({
+  initialMessage,
+}: AIChatPageProps) {
+  const [messages, setMessages] =
+    useState<ChatMessage[]>(() =>
+      createInitialMessages(
+        initialMessage
+      )
     );
-  }
 
-  if (
-    normalizedMessage.includes("fever")
-  ) {
-    return (
-      "A fever is often the body’s response to an infection. Rest, drink fluids, and monitor your temperature.\n\n" +
-      "Seek medical attention if the fever is very high, lasts several days, or occurs with breathing difficulty, severe dehydration, confusion, a stiff neck, seizures, or a worsening rash."
-    );
-  }
+  const [message, setMessage] =
+    useState("");
 
-  if (
-    normalizedMessage.includes("sleep")
-  ) {
-    return (
-      "A regular sleep schedule can help improve sleep quality. Try avoiding caffeine late in the day, reducing screen use before bed, and keeping your room dark and comfortable.\n\n" +
-      "If sleep problems continue for several weeks or affect daily life, consider speaking with a healthcare professional."
-    );
-  }
-
-  if (
-    normalizedMessage.includes("sore throat")
-  ) {
-    return (
-      "A sore throat may be caused by a viral infection, allergies, dry air, irritation, or sometimes a bacterial infection.\n\n" +
-      "Warm fluids, rest, and hydration may help. Seek medical advice if you have difficulty breathing or swallowing, severe swelling, dehydration, or symptoms that continue to worsen."
-    );
-  }
-
-  return (
-    "Thank you for explaining that. Could you tell me when the symptoms started, how severe they are, and whether you have any other symptoms?\n\n" +
-    "For urgent or severe symptoms, contact a qualified healthcare professional or local emergency service."
-  );
-}
-
-export function AIChatPage() {
-  const [messages, setMessages] = useState<
-    ChatMessage[]
-  >([starterMessage]);
-
-  const [message, setMessage] = useState("");
-  const [isTyping, setIsTyping] =
-    useState(false);
+  const [
+    isTyping,
+    setIsTyping,
+  ] = useState(false);
 
   const messagesEndRef =
     useRef<HTMLDivElement>(null);
@@ -99,10 +148,7 @@ export function AIChatPage() {
 
   function clearChat() {
     setMessages([
-      {
-        ...starterMessage,
-        createdAt: new Date(),
-      },
+      createWelcomeMessage(),
     ]);
 
     setMessage("");
@@ -116,7 +162,10 @@ export function AIChatPage() {
       customMessage ?? message
     ).trim();
 
-    if (!cleanMessage || isTyping) {
+    if (
+      !cleanMessage ||
+      isTyping
+    ) {
       return;
     }
 
@@ -127,30 +176,37 @@ export function AIChatPage() {
       createdAt: new Date(),
     };
 
-    setMessages((currentMessages) => [
-      ...currentMessages,
-      userMessage,
-    ]);
+    setMessages(
+      (currentMessages) => [
+        ...currentMessages,
+        userMessage,
+      ]
+    );
 
     setMessage("");
     setIsTyping(true);
 
     window.setTimeout(() => {
-      const assistantMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content:
-          createDemoResponse(cleanMessage),
-        createdAt: new Date(),
-      };
+      const assistantMessage: ChatMessage =
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content:
+            createDemoResponse(
+              cleanMessage
+            ),
+          createdAt: new Date(),
+        };
 
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        assistantMessage,
-      ]);
+      setMessages(
+        (currentMessages) => [
+          ...currentMessages,
+          assistantMessage,
+        ]
+      );
 
       setIsTyping(false);
-    }, 1300);
+    }, 1200);
   }
 
   return (
@@ -165,7 +221,10 @@ export function AIChatPage() {
             onClick={clearChat}
             className="primary-gradient flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:scale-[1.02]"
           >
-            <MessageCirclePlus size={18} />
+            <MessageCirclePlus
+              size={18}
+            />
+
             New conversation
           </button>
 
@@ -181,7 +240,9 @@ export function AIChatPage() {
                     key={prompt}
                     type="button"
                     onClick={() =>
-                      sendMessage(prompt)
+                      sendMessage(
+                        prompt
+                      )
                     }
                     className="rounded-2xl border border-white/60 bg-white/35 px-3 py-3 text-left text-sm leading-5 transition hover:bg-white/65"
                   >
@@ -194,13 +255,18 @@ export function AIChatPage() {
 
           <div className="mt-auto rounded-2xl border border-red-200/60 bg-red-50/45 p-4">
             <div className="flex items-center gap-2 font-bold text-red-700">
-              <ShieldAlert size={18} />
+              <ShieldAlert
+                size={18}
+              />
+
               Emergency warning
             </div>
 
             <p className="mt-2 text-xs leading-5 text-red-950/70">
-              Nova cannot handle medical emergencies. Contact
-              local emergency services for immediate help.
+              Nova cannot handle medical
+              emergencies. Contact local
+              emergency services for
+              immediate help.
             </p>
           </div>
         </GlassCard>
@@ -218,13 +284,7 @@ export function AIChatPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <h2
-                  className="text-lg font-bold"
-                  style={{
-                    fontFamily:
-                      "var(--font-plus-jakarta), sans-serif",
-                  }}
-                >
+                <h2 className="text-lg font-bold">
                   Nova
                 </h2>
 
@@ -236,6 +296,7 @@ export function AIChatPage() {
 
               <p className="flex items-center gap-2 text-xs text-[#85675E]">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
+
                 AI healthcare companion
               </p>
             </div>
@@ -253,16 +314,28 @@ export function AIChatPage() {
 
         <div className="soft-scrollbar flex-1 overflow-y-auto px-4 py-6 sm:px-6">
           <div className="mx-auto flex max-w-4xl flex-col gap-5">
-            {messages.map((chatMessage) => (
-              <ChatMessageBubble
-                key={chatMessage.id}
-                message={chatMessage}
-              />
-            ))}
+            {messages.map(
+              (chatMessage) => (
+                <ChatMessageBubble
+                  key={
+                    chatMessage.id
+                  }
+                  message={
+                    chatMessage
+                  }
+                />
+              )
+            )}
 
-            {isTyping && <TypingIndicator />}
+            {isTyping && (
+              <TypingIndicator />
+            )}
 
-            <div ref={messagesEndRef} />
+            <div
+              ref={
+                messagesEndRef
+              }
+            />
           </div>
         </div>
 
@@ -271,26 +344,34 @@ export function AIChatPage() {
             <div className="mb-4 flex flex-wrap justify-center gap-2">
               {suggestedPrompts
                 .slice(0, 3)
-                .map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() =>
-                      sendMessage(prompt)
-                    }
-                    className="rounded-full border border-white/70 bg-white/45 px-4 py-2 text-xs font-medium transition hover:bg-white/75"
-                  >
-                    {prompt}
-                  </button>
-                ))}
+                .map(
+                  (prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() =>
+                        sendMessage(
+                          prompt
+                        )
+                      }
+                      className="rounded-full border border-white/70 bg-white/45 px-4 py-2 text-xs font-medium transition hover:bg-white/75"
+                    >
+                      {prompt}
+                    </button>
+                  )
+                )}
             </div>
           )}
 
           <ChatComposer
             message={message}
             disabled={isTyping}
-            onMessageChange={setMessage}
-            onSend={() => sendMessage()}
+            onMessageChange={
+              setMessage
+            }
+            onSend={() =>
+              sendMessage()
+            }
           />
         </div>
       </GlassCard>
